@@ -4,6 +4,11 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_file_date","2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
 # MAGIC %run "../includes/configuration"
 
 # COMMAND ----------
@@ -33,7 +38,7 @@ pit_stops_schema = StructType(fields=[StructField("raceId", IntegerType(), False
 #read data into dataframe
 pit_stops_df = spark.read.option("header",True).option("multiline", True) \
 .schema(pit_stops_schema) \
-.json(f"{raw_folder_path}/pit_stops.json")
+.json(f"{raw_folder_path}/{v_file_date}/pit_stops.json")
 
 # COMMAND ----------
 
@@ -46,7 +51,8 @@ pit_stops_df = spark.read.option("header",True).option("multiline", True) \
 from pyspark.sql.functions import lit
 pit_stops_renamed_df = pit_stops_df.withColumnRenamed("raceId", "race_id") \
 .withColumnRenamed("driverId", "driver_id") \
-.withColumn("data_source", lit(v_data_source))
+.withColumn("data_source", lit(v_data_source)) \
+.withColumn("file_date", lit(v_file_date))
 
 # COMMAND ----------
 
@@ -64,8 +70,8 @@ pit_stops_final_df = add_ingestion_date(pit_stops_renamed_df)
 
 # COMMAND ----------
 
-#PartitionBy() partitions the data.  Similar to an index, helps with processing performance and splitting.
-pit_stops_final_df.write.mode("overwrite").partitionBy('race_id').parquet(f"{processed_folder_path}/pit_stops")
+#function in the common functions notebook
+overwrite_partition_write_table(pit_stops_final_df,'f1_processed','pit_stops','race_id')
 
 # COMMAND ----------
 

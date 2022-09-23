@@ -4,6 +4,11 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_file_date","2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
 # MAGIC %run "../includes/configuration"
 
 # COMMAND ----------
@@ -32,7 +37,7 @@ lap_times_schema = StructType(fields=[StructField("raceId", IntegerType(), False
 #read data into dataframe
 lap_times_df = spark.read \
 .schema(lap_times_schema) \
-.csv(f"{raw_folder_path}/lap_times/lap_times_split*.csv")
+.csv(f"{raw_folder_path}/{v_file_date}/lap_times/lap_times_split*.csv")
 
 # COMMAND ----------
 
@@ -45,7 +50,8 @@ lap_times_df = spark.read \
 from pyspark.sql.functions import lit
 lap_times_renamed_df = lap_times_df.withColumnRenamed("raceId", "race_id") \
 .withColumnRenamed("driverId", "driver_id") \
-.withColumn("data_source", lit(v_data_source))
+.withColumn("data_source", lit(v_data_source)) \
+.withColumn("file_date", lit(v_file_date))
 
 # COMMAND ----------
 
@@ -64,7 +70,7 @@ lap_times_final_df = add_ingestion_date(lap_times_renamed_df)
 # COMMAND ----------
 
 #PartitionBy() partitions the data.  Similar to an index, helps with processing performance and splitting.
-lap_times_final_df.write.mode("overwrite").partitionBy('race_id').parquet(f"{processed_folder_path}/lap_times")
+overwrite_partition_write_table(lap_times_final_df,'f1_processed','lap_times','race_id')
 
 # COMMAND ----------
 

@@ -4,6 +4,11 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_file_date","2021-03-21")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
 # MAGIC %run "../includes/configuration"
 
 # COMMAND ----------
@@ -34,7 +39,7 @@ races_schema = StructType(fields=[StructField("raceId", IntegerType(), False),
 #read data into dataframe
 races_df = spark.read.option("header",True) \
 .schema(races_schema) \
-.csv(f"{raw_folder_path}/races.csv")
+.csv(f"{raw_folder_path}/{v_file_date}/races.csv")
 
 # COMMAND ----------
 
@@ -74,7 +79,8 @@ races_final_df = races_ingestion_date \
 .drop(col('date')) \
 .drop(col('time')) \
 .drop(col("url")) \
-.withColumn("data_source", lit(v_data_source))
+.withColumn("data_source", lit(v_data_source)) \
+.withColumn("file_date", lit(v_file_date))
 
 # COMMAND ----------
 
@@ -84,7 +90,7 @@ races_final_df = races_ingestion_date \
 # COMMAND ----------
 
 #PartitionBy() partitions the data.  Similar to an index, helps with processing performance and splitting.
-races_final_df.write.mode("overwrite").partitionBy("race_year").parquet(f"{processed_folder_path}/races")
+races_final_df.write.mode("overwrite").partitionBy("race_year").format("parquet").saveAsTable("f1_processed.races")
 
 # COMMAND ----------
 

@@ -4,6 +4,11 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_file_date","2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
 # MAGIC %run "../includes/configuration"
 
 # COMMAND ----------
@@ -36,7 +41,7 @@ qualifying_schema = StructType(fields=[StructField("qualifyId", IntegerType(), F
 qualifying_df = spark.read \
 .option("multiline", True) \
 .schema(qualifying_schema) \
-.json(f"{raw_folder_path}/qualifying/qualifying_split*.json")
+.json(f"{raw_folder_path}/{v_file_date}/qualifying/qualifying_split*.json")
 
 # COMMAND ----------
 
@@ -51,7 +56,8 @@ qualifying_renamed_df = qualifying_df.withColumnRenamed("raceId", "race_id") \
 .withColumnRenamed("driverId", "driver_id") \
 .withColumnRenamed("constructorId", "constructor_id") \
 .withColumnRenamed("qualifyId", "qualify_id") \
-.withColumn("data_source", lit(v_data_source))
+.withColumn("data_source", lit(v_data_source)) \
+.withColumn("file_date", lit(v_file_date)) 
 
 # COMMAND ----------
 
@@ -60,7 +66,7 @@ qualifying_renamed_df = qualifying_df.withColumnRenamed("raceId", "race_id") \
 
 # COMMAND ----------
 
-lap_times_final_df = add_ingestion_date(qualifying_renamed_df)
+qualifying_final_df = add_ingestion_date(qualifying_renamed_df)
 
 # COMMAND ----------
 
@@ -70,8 +76,7 @@ lap_times_final_df = add_ingestion_date(qualifying_renamed_df)
 # COMMAND ----------
 
 #PartitionBy() partitions the data.  Similar to an index, helps with processing performance and splitting.
-folder_name = "qualifying"
-lap_times_final_df.write.mode("overwrite").partitionBy('race_id').parquet(f"{processed_folder_path}/{folder_name}")
+overwrite_partition_write_table(qualifying_final_df,'f1_processed','qualifying','race_id')
 
 # COMMAND ----------
 

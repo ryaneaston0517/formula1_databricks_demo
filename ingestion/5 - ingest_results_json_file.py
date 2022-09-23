@@ -4,6 +4,11 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_file_date","2021-03-28")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
 # MAGIC %run "../includes/configuration"
 
 # COMMAND ----------
@@ -44,7 +49,7 @@ results_schema = StructType(fields=[StructField("resultId", IntegerType(), False
 #read data into dataframe
 results_df = spark.read.option("header",True) \
 .schema(results_schema) \
-.json(f"{raw_folder_path}/results.json")
+.json(f"{raw_folder_path}/{v_file_date}/results.json")
 
 # COMMAND ----------
 
@@ -65,7 +70,8 @@ results_renamed_df = results_df.withColumnRenamed("resultId", "result_id") \
 .withColumnRenamed("fastestLapTime", "fastest_lap_time") \
 .withColumnRenamed("fastestLapSpeed", "fastest_lap_speed") \
 .drop(col("statusId")) \
-.withColumn("data_source", lit(v_data_source))
+.withColumn("data_source", lit(v_data_source)) \
+.withColumn("file_date", lit(v_file_date))
 
 # COMMAND ----------
 
@@ -83,9 +89,31 @@ results_final_df = add_ingestion_date(results_renamed_df)
 
 # COMMAND ----------
 
-#PartitionBy() partitions the data.  Similar to an index, helps with processing performance and splitting.
-results_final_df.write.mode("overwrite").partitionBy('race_id').parquet(f"{processed_folder_path}/results")
+# MAGIC %md
+# MAGIC ##### Drop Partition if it exists
+
+# COMMAND ----------
+
+#method 1 - purge existing data
+
+# for race_id_list in results_final_df.select("race_id").distinct().collect():
+#     if spark._jsparkSession.catalog().tableExists("f1_processed.results"):
+#         spark.sql(f"alter table f1_processed.results drop if exists partition (race_id = {race_id_list.race_id})")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##### Write to parquet
+
+# COMMAND ----------
+
+#function in the common functions notebook
+overwrite_partition_write_table(results_final_df,'f1_processed','results','race_id')
 
 # COMMAND ----------
 
 dbutils.notebook.exit("Success")
+
+# COMMAND ----------
+
+

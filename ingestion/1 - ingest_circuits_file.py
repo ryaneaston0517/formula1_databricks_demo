@@ -9,6 +9,11 @@ v_data_source = dbutils.widgets.get("p_data_source")
 
 # COMMAND ----------
 
+dbutils.widgets.text("p_file_date","2021-03-21")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC #### Step 1 - Read the CSV file using the spark dataframe reader
 
@@ -50,7 +55,7 @@ circuits_schema = StructType(fields=[StructField("circuitId", IntegerType(), Fal
 circuits_df = spark.read \
 .option("header", True) \
 .schema(circuits_schema) \
-.csv(f"{raw_folder_path}/circuits.csv")
+.csv(f"{raw_folder_path}/{v_file_date}/circuits.csv")
 
 # COMMAND ----------
 
@@ -106,7 +111,8 @@ circuits_renamed_df = circuits_selected_df.withColumnRenamed("circuitId", "circu
 .withColumnRenamed("lat", "latitude") \
 .withColumnRenamed("lng", "longitude") \
 .withColumnRenamed("alt", "altitude") \
-.withColumn("data_source", lit(v_data_source))
+.withColumn("data_source", lit(v_data_source)) \
+.withColumn("file_date", lit(v_file_date))
 
 # COMMAND ----------
 
@@ -122,13 +128,15 @@ circuits_final_df = add_ingestion_date(circuits_renamed_df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Step 5 - Read data to datalake as parquet
+# MAGIC ### Step 5 - write data to datalake as parquet
 
 # COMMAND ----------
 
 #write.parquet will write to parquet files
 #write.mode will dictate if you want to overwrite/append/error if file already exists.
-circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")
+#circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")
+
+circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.circuits")
 
 # COMMAND ----------
 
