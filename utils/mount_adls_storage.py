@@ -70,6 +70,10 @@ mount_adls("presentation")
 
 # COMMAND ----------
 
+mount_adls("demo")
+
+# COMMAND ----------
+
 #commant to mount storage has succeeded.
 #verify:
 dbutils.fs.ls(f"/mnt/{storage_account_name}")
