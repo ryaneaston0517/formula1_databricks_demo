@@ -7,7 +7,7 @@
 			"domain": "https://adb-3770599143237538.18.azuredatabricks.net",
 			"authentication": "MSI",
 			"workspaceResourceId": "/subscriptions/f16de129-c8c0-4fe8-9912-9199a197ebd9/resourceGroups/RG-DataBricks-Demo/providers/Microsoft.Databricks/workspaces/WS-DataBricks-Tutorial",
-			"existingClusterId": "0901-150016-2eycirrw"
+			"existingClusterId": "0929-211525-je6vqan1"
 		}
 	}
 }
