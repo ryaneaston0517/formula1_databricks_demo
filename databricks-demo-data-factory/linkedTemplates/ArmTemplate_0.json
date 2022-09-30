@@ -1,0 +1,118 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "databricks-demo-data-factory"
+		},
+		"ls_databricks_course_ws_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0901-150016-2eycirrw"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_databricks_course_ws')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-3770599143237538.18.azuredatabricks.net",
+					"authentication": "MSI",
+					"workspaceResourceId": "/subscriptions/f16de129-c8c0-4fe8-9912-9199a197ebd9/resourceGroups/RG-DataBricks-Demo/providers/Microsoft.Databricks/workspaces/WS-DataBricks-Tutorial",
+					"existingClusterId": "[parameters('ls_databricks_course_ws_properties_typeProperties_existingClusterId')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_databricks_tutorial')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-3770599143237538.18.azuredatabricks.net",
+					"authentication": "MSI",
+					"workspaceResourceId": "/subscriptions/f16de129-c8c0-4fe8-9912-9199a197ebd9/resourceGroups/RG-DataBricks-Demo/providers/Microsoft.Databricks/workspaces/WS-DataBricks-Tutorial",
+					"newClusterNodeType": "Standard_DS3_v2",
+					"newClusterNumOfWorker": "1",
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+					},
+					"newClusterVersion": "10.4.x-scala2.12",
+					"newClusterInitScripts": [],
+					"clusterOption": "Fixed"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_ingest_formulat1_data')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Ingest Circuits File",
+						"type": "DatabricksNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Repos/rjeasto@umich.edu/formula1_databricks_demo/ingestion/1 - ingest_circuits_file",
+							"baseParameters": {
+								"p_data_source": {
+									"value": "@variables('v_data_source')",
+									"type": "Expression"
+								},
+								"p_file_date": {
+									"value": "@formatDateTime(pipeline().parameters.p_window_end_date,'yyyy-MM-dd')",
+									"type": "Expression"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "ls_databricks_course_ws",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"concurrency": 1,
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"p_window_end_date": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"v_data_source": {
+						"type": "String",
+						"defaultValue": "Ergast"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_databricks_course_ws')]"
+			]
+		}
+	]
+}
