@@ -136,7 +136,7 @@ circuits_final_df = add_ingestion_date(circuits_renamed_df)
 #write.mode will dictate if you want to overwrite/append/error if file already exists.
 #circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")
 
-circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.circuits")
+circuits_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.circuits")
 
 # COMMAND ----------
 

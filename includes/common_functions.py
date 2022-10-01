@@ -1,6 +1,8 @@
 # Databricks notebook source
-from pyspark.sql.functions import current_timestamp, desc, rank, sum, when, count, col
+from pyspark.sql.functions import current_timestamp, desc, rank, sum, when, count, col, lit, concat_ws
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DateType, FloatType
 from pyspark.sql.window import Window
+from delta.tables import DeltaTable
 
 # COMMAND ----------
 
@@ -18,19 +20,33 @@ def rearrange_partition_column(input_df, partition_column):
 
 # COMMAND ----------
 
-def overwrite_partition_write_table(input_df,db_name,table_name,partition_column):
-    spark.conf.set("spark.sql.sources.partitionOverwriteMode","dynamic")
-    output_df = rearrange_partition_column(input_df,partition_column)
-    if spark._jsparkSession.catalog().tableExists(f"{db_name}.{table_name}"):
-        output_df.write.mode("overwrite").insertInto(f"{db_name}.{table_name}")
+def overwrite_partition_write_table(input_df,db_name,table_name,partition_column,delta_merge_key_list):
+    spark.conf.set("spark.databricks.optimizer.dynamicPartitionPruning","true")
+    
+    if db_name == 'f1_processed':
+        blob_layer = 'processed'
     else:
-        output_df.write.mode("append").partitionBy(f"{partition_column}").format("parquet").saveAsTable(f"{db_name}.{table_name}")
+        blob_layer = 'presentation'
+    
+    tmp_df = input_df.withColumn('delta_merge_key',concat_ws("-",*delta_merge_key_list))
+    
+    spark.conf.set("spark.sql.sources.partitionOverwriteMode","dynamic")
+    output_df = rearrange_partition_column(tmp_df,partition_column)
+    if spark._jsparkSession.catalog().tableExists(f"{db_name}.{table_name}"):
+        deltaTable = DeltaTable.forPath(spark, f"dbfs:/mnt/sadatabrickstutorial/{blob_layer}/{table_name}/")
+        deltaTable.alias('tgt').merge(output_df.alias("src"),
+                                     f"tgt.delta_merge_key = src.delta_merge_key and tgt.{partition_column} =src.{partition_column}") \
+            .whenMatchedUpdateAll() \
+            .whenNotMatchedInsertAll() \
+            .execute()
+    else:
+        output_df.write.mode("append").partitionBy(f"{partition_column}").format("delta").saveAsTable(f"{db_name}.{table_name}")
     return None
 
 # COMMAND ----------
 
 def race_year_list_func(blob_path,blob_file,file_date):
-    output_df = spark.read.parquet(f"{blob_path}/{blob_file}") \
+    output_df = spark.read.format("delta").load(f"{blob_path}/{blob_file}") \
     .filter(f"file_date = '{file_date}'") \
     .select("race_year").distinct() \
     .collect()

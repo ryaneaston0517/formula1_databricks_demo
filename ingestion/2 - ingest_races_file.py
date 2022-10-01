@@ -90,11 +90,7 @@ races_final_df = races_ingestion_date \
 # COMMAND ----------
 
 #PartitionBy() partitions the data.  Similar to an index, helps with processing performance and splitting.
-races_final_df.write.mode("overwrite").partitionBy("race_year").format("parquet").saveAsTable("f1_processed.races")
-
-# COMMAND ----------
-
-display(spark.read.parquet(f"{processed_folder_path}/races"))
+races_final_df.write.mode("overwrite").partitionBy("race_year").format("delta").saveAsTable("f1_processed.races")
 
 # COMMAND ----------
 

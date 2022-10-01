@@ -23,8 +23,6 @@ v_file_date = dbutils.widgets.get("p_file_date")
 # COMMAND ----------
 
 #import schema type functions from pyspark 
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
-
 #2nd:  Outer JSON - Driver Schema
 qualifying_schema = StructType(fields=[StructField("qualifyId", IntegerType(), False),
                                       StructField("raceId", IntegerType(), False),
@@ -51,7 +49,6 @@ qualifying_df = spark.read \
 # COMMAND ----------
 
 #renaming columns
-from pyspark.sql.functions import lit
 qualifying_renamed_df = qualifying_df.withColumnRenamed("raceId", "race_id") \
 .withColumnRenamed("driverId", "driver_id") \
 .withColumnRenamed("constructorId", "constructor_id") \
@@ -76,7 +73,7 @@ qualifying_final_df = add_ingestion_date(qualifying_renamed_df)
 # COMMAND ----------
 
 #PartitionBy() partitions the data.  Similar to an index, helps with processing performance and splitting.
-overwrite_partition_write_table(qualifying_final_df,'f1_processed','qualifying','race_id')
+overwrite_partition_write_table(qualifying_final_df,'f1_processed','qualifying','race_id',['qualify_id'])
 
 # COMMAND ----------
 

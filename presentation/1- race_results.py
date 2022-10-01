@@ -22,7 +22,7 @@ v_file_date = dbutils.widgets.get("p_file_date")
 
 # COMMAND ----------
 
-races_df = spark.read.parquet(f"{processed_folder_path}/races") \
+races_df = spark.read.format("delta").load(f"{processed_folder_path}/races") \
 .withColumnRenamed("name","race_name") \
 .withColumnRenamed('race_timestamp', 'race_date') \
 .withColumnRenamed('file_date', 'races_file_date')
@@ -30,7 +30,7 @@ races_df = spark.read.parquet(f"{processed_folder_path}/races") \
 
 # COMMAND ----------
 
-circuits_df = spark.read.parquet(f"{processed_folder_path}/circuits") \
+circuits_df = spark.read.format("delta").load(f"{processed_folder_path}/circuits") \
 .withColumnRenamed("location","circuit_location") \
 .withColumnRenamed("file_date","circuit_file_date")
 
@@ -47,7 +47,11 @@ race_circuits_df = races_df.join(circuits_df, races_df.circuit_id == circuits_df
 
 # COMMAND ----------
 
-results_df = spark.read.parquet(f"{processed_folder_path}/results") \
+results_df = spark.read.format("delta").load(f"{processed_folder_path}/results")
+
+# COMMAND ----------
+
+results_df = spark.read.format("delta").load(f"{processed_folder_path}/results") \
 .filter(f"file_date = '{v_file_date}'") \
 .withColumnRenamed("time","race_time") \
 .withColumnRenamed("file_date","results_file_date")
@@ -80,8 +84,7 @@ race_results_df = race_circuits_df.join(results_df, races_df.race_id == results_
 
 # COMMAND ----------
 
-from pyspark.sql.functions import col
-drivers_df = spark.read.parquet(f"{processed_folder_path}/drivers") \
+drivers_df = spark.read.format("delta").load(f"{processed_folder_path}/drivers") \
 .withColumnRenamed("name","driver_name") \
 .withColumnRenamed("number","driver_number") \
 .withColumnRenamed("nationality", "driver_nationality") \
@@ -103,7 +106,7 @@ race_drivers_df = race_results_df.join(drivers_df, "driver_id", "inner")
 
 # COMMAND ----------
 
-constructor_df = spark.read.parquet(f"{processed_folder_path}/constructor") \
+constructor_df = spark.read.format("delta").load(f"{processed_folder_path}/constructor") \
 .withColumnRenamed("name","team") \
 .withColumnRenamed("file_date","constructor_file_date") \
 .drop(col("constructor_ref")) \
@@ -119,7 +122,6 @@ race_constructor_df = race_drivers_df.join(constructor_df, "constructor_id", "in
 
 # COMMAND ----------
 
-from pyspark.sql.functions import current_timestamp
 final_df = race_constructor_df.withColumn("created_date", current_timestamp()) \
 .drop(col("constructor_file_date")) \
 .drop(col("driver_file_date")) \
@@ -128,7 +130,7 @@ final_df = race_constructor_df.withColumn("created_date", current_timestamp()) \
 
 # COMMAND ----------
 
-overwrite_partition_write_table(final_df,'f1_presentation','race_results','race_id')
+overwrite_partition_write_table(final_df,'f1_presentation','race_results','race_id',['race_id','driver_name'])
 
 # COMMAND ----------
 

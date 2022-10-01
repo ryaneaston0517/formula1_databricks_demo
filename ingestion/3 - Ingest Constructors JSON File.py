@@ -61,7 +61,7 @@ constructors_final_df = add_ingestion_date(constructors_renamed_df)
 # COMMAND ----------
 
 folder_name = "constructor"
-constructors_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.constructor")
+constructors_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.constructor")
 
 # COMMAND ----------
 

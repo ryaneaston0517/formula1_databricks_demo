@@ -417,4 +417,47 @@ for driver_id in range(3,20):
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ##### Convert Parquet to Delta
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC create table if not exists f1_demo.drivers_convert_to_delta
+# MAGIC (
+# MAGIC driverId int,
+# MAGIC dob date,
+# MAGIC forename string,
+# MAGIC surname string,
+# MAGIC createdDate date,
+# MAGIC updatedDate date
+# MAGIC )
+# MAGIC using parquet
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC insert into f1_demo.drivers_convert_to_delta
+# MAGIC select * from f1_demo.drivers_merge;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC convert to delta f1_demo.drivers_convert_to_delta
+
+# COMMAND ----------
+
+df = spark.table("f1_demo.drivers_convert_to_delta")
+
+# COMMAND ----------
+
+df.write.format("parquet").save("/mnt/sadatabrickstutorial/demo/drivers_convert_to_delta_new")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC convert to delta parquet.`/mnt/sadatabrickstutorial/demo/drivers_convert_to_delta_new`
+
+# COMMAND ----------
+
 

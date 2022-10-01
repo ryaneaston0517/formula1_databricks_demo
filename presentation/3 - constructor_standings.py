@@ -16,7 +16,7 @@ race_year_list = race_year_list_func(presentation_folder_path,"race_results",v_f
 
 # COMMAND ----------
 
-df = spark.read.parquet(f"{presentation_folder_path}/race_results") \
+df = spark.read.format("delta").load(f"{presentation_folder_path}/race_results") \
 .filter(col("race_year").isin(race_year_list))
 
 # COMMAND ----------
@@ -29,4 +29,8 @@ final_df = rank_by_year_func(df1)
 
 # COMMAND ----------
 
-overwrite_partition_write_table(final_df,'f1_presentation','constructor_standings','race_year')
+overwrite_partition_write_table(final_df,'f1_presentation','constructor_standings','race_year',['race_year','team'])
+
+# COMMAND ----------
+
+

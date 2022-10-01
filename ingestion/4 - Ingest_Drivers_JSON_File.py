@@ -83,7 +83,7 @@ drivers_final_df = add_ingestion_date(drivers_renamed_df)
 # COMMAND ----------
 
 folder_name = "drivers"
-drivers_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.drivers")
+drivers_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.drivers")
 
 # COMMAND ----------
 

@@ -23,8 +23,6 @@ v_file_date = dbutils.widgets.get("p_file_date")
 # COMMAND ----------
 
 #import schema type functions from pyspark 
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
-
 #2nd:  Outer JSON - Driver Schema
 lap_times_schema = StructType(fields=[StructField("raceId", IntegerType(), False),
                                    StructField("driverId", IntegerType(), False),
@@ -47,7 +45,6 @@ lap_times_df = spark.read \
 # COMMAND ----------
 
 #renaming columns
-from pyspark.sql.functions import lit
 lap_times_renamed_df = lap_times_df.withColumnRenamed("raceId", "race_id") \
 .withColumnRenamed("driverId", "driver_id") \
 .withColumn("data_source", lit(v_data_source)) \
@@ -60,7 +57,7 @@ lap_times_renamed_df = lap_times_df.withColumnRenamed("raceId", "race_id") \
 
 # COMMAND ----------
 
-lap_times_final_df = add_ingestion_date(lap_times_renamed_df)
+lap_times_final_df = add_ingestion_date(lap_times_renamed_df).dropDuplicates(['race_id','driver_id','lap'])
 
 # COMMAND ----------
 
@@ -70,8 +67,12 @@ lap_times_final_df = add_ingestion_date(lap_times_renamed_df)
 # COMMAND ----------
 
 #PartitionBy() partitions the data.  Similar to an index, helps with processing performance and splitting.
-overwrite_partition_write_table(lap_times_final_df,'f1_processed','lap_times','race_id')
+overwrite_partition_write_table(lap_times_final_df,'f1_processed','lap_times','race_id',['race_id','driver_id','lap'])
 
 # COMMAND ----------
 
 dbutils.notebook.exit("Success")
+
+# COMMAND ----------
+
+

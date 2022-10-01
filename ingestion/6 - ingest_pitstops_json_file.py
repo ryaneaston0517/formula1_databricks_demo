@@ -23,8 +23,6 @@ v_file_date = dbutils.widgets.get("p_file_date")
 # COMMAND ----------
 
 #import schema type functions from pyspark 
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
-
 #2nd:  Outer JSON - Driver Schema
 pit_stops_schema = StructType(fields=[StructField("raceId", IntegerType(), False),
                                    StructField("driverId", IntegerType(), False),
@@ -48,7 +46,6 @@ pit_stops_df = spark.read.option("header",True).option("multiline", True) \
 # COMMAND ----------
 
 #renaming columns
-from pyspark.sql.functions import lit
 pit_stops_renamed_df = pit_stops_df.withColumnRenamed("raceId", "race_id") \
 .withColumnRenamed("driverId", "driver_id") \
 .withColumn("data_source", lit(v_data_source)) \
@@ -66,12 +63,12 @@ pit_stops_final_df = add_ingestion_date(pit_stops_renamed_df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### 4 - Read data to datalake as parquet
+# MAGIC #### 4 - Read data to datalake as delta
 
 # COMMAND ----------
 
 #function in the common functions notebook
-overwrite_partition_write_table(pit_stops_final_df,'f1_processed','pit_stops','race_id')
+overwrite_partition_write_table(pit_stops_final_df,'f1_processed','pit_stops','race_id',['race_id','driver_id','stop'])
 
 # COMMAND ----------
 
