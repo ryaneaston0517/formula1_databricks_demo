@@ -8,7 +8,6 @@
 			"frequency": "Hour",
 			"interval": 168,
 			"startTime": "2022-09-30T22:00:00Z",
-			"endTime": "2022-10-01T19:27:00Z",
 			"delay": "00:00:00",
 			"maxConcurrency": 1,
 			"retryPolicy": {
