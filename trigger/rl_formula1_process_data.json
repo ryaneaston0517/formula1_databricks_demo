@@ -2,7 +2,7 @@
 	"name": "rl_formula1_process_data",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipeline": {
 			"pipelineReference": {
 				"referenceName": "pl_process_formula1_data",
