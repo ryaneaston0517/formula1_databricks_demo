@@ -19,11 +19,7 @@
 			"type": "string",
 			"defaultValue": "https://sadatabrickstutorial.dfs.core.windows.net/"
 		},
-		"tr_process_formulat1_data_properties_pipeline_parameters_p_window_end_date": {
-			"type": "string",
-			"defaultValue": "@trigger().outputs.windowEndTime"
-		},
-		"rl_formula1_process_data_properties_pipeline_parameters_p_window_end_date": {
+		"tr_formula1_process_data_properties_pipeline_parameters_p_window_end_date": {
 			"type": "string",
 			"defaultValue": "@trigger().outputs.windowEndTime"
 		}
@@ -739,7 +735,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/tr_process_formulat1_data')]",
+			"name": "[concat(parameters('factoryName'), '/tr_formula1_process_data')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -751,51 +747,17 @@
 						"type": "PipelineReference"
 					},
 					"parameters": {
-						"p_window_end_date": "[parameters('tr_process_formulat1_data_properties_pipeline_parameters_p_window_end_date')]"
+						"p_window_end_date": "[parameters('tr_formula1_process_data_properties_pipeline_parameters_p_window_end_date')]"
 					}
 				},
 				"type": "TumblingWindowTrigger",
 				"typeProperties": {
 					"frequency": "Hour",
 					"interval": 168,
-					"startTime": "2022-10-01T02:16:00Z",
-					"endTime": "2022-10-02T02:16:00Z",
+					"startTime": "2021-03-14T22:00:00Z",
+					"endTime": "2021-04-25T00:23:00Z",
 					"delay": "00:00:00",
 					"maxConcurrency": 1,
-					"retryPolicy": {
-						"intervalInSeconds": 30
-					},
-					"dependsOn": []
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_process_formula1_data')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/rl_formula1_process_data')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipeline": {
-					"pipelineReference": {
-						"referenceName": "pl_process_formula1_data",
-						"type": "PipelineReference"
-					},
-					"parameters": {
-						"p_window_end_date": "[parameters('rl_formula1_process_data_properties_pipeline_parameters_p_window_end_date')]"
-					}
-				},
-				"type": "TumblingWindowTrigger",
-				"typeProperties": {
-					"frequency": "Hour",
-					"interval": 168,
-					"startTime": "2021-03-14T00:21:00Z",
-					"endTime": "2021-04-25T22:00:00Z",
-					"delay": "00:00:00",
-					"maxConcurrency": 50,
 					"retryPolicy": {
 						"intervalInSeconds": 30
 					},

@@ -19,11 +19,7 @@
 			"type": "string",
 			"defaultValue": "https://sadatabrickstutorial.dfs.core.windows.net/"
 		},
-		"tr_process_formulat1_data_properties_pipeline_parameters_p_window_end_date": {
-			"type": "string",
-			"defaultValue": "@trigger().outputs.windowEndTime"
-		},
-		"rl_formula1_process_data_properties_pipeline_parameters_p_window_end_date": {
+		"tr_formula1_process_data_properties_pipeline_parameters_p_window_end_date": {
 			"type": "string",
 			"defaultValue": "@trigger().outputs.windowEndTime"
 		},
@@ -63,11 +59,8 @@
 					"ls_formula1dl_storage_properties_typeProperties_url": {
 						"value": "[parameters('ls_formula1dl_storage_properties_typeProperties_url')]"
 					},
-					"tr_process_formulat1_data_properties_pipeline_parameters_p_window_end_date": {
-						"value": "[parameters('tr_process_formulat1_data_properties_pipeline_parameters_p_window_end_date')]"
-					},
-					"rl_formula1_process_data_properties_pipeline_parameters_p_window_end_date": {
-						"value": "[parameters('rl_formula1_process_data_properties_pipeline_parameters_p_window_end_date')]"
+					"tr_formula1_process_data_properties_pipeline_parameters_p_window_end_date": {
+						"value": "[parameters('tr_formula1_process_data_properties_pipeline_parameters_p_window_end_date')]"
 					}
 				}
 			},
